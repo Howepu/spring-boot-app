@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр пользователя</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Информация о пользователе</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title" th:text="${user.username}">Имя пользователя</h5>
+                <h6 class="card-subtitle mb-2 text-muted" th:text="${user.email}">Email пользователя</h6>
+                <p class="card-text">ID: <span th:text="${user.id}">1</span></p>
+                
+                <a href="/users" class="btn btn-primary">К списку пользователей</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

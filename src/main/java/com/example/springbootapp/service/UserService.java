@@ -38,12 +38,22 @@ public class UserService {
         return userRepository.findById(id);
     }
     
+    
     /**
      * Создать нового пользователя
      * @param user объект пользователя
      * @return созданный пользователь
      */
     public User createUser(User user) {
+        return userRepository.save(user);
+    }
+    
+    /**
+     * Обновить данные пользователя
+     * @param user объект пользователя с обновленными данными
+     * @return обновленный пользователь
+     */
+    public User updateUser(User user) {
         return userRepository.save(user);
     }
 }

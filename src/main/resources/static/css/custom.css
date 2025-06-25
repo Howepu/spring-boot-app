@@ -1,0 +1,65 @@
+/* custom.css - Файл стилей для Spring Boot приложения */
+
+/* Определение пользовательских переменных цветов */
+:root {
+  --primary-blue: #3b82f6; /* Кастомный цвет primary-blue */
+  --primary-blue-dark: #2563eb; /* Более темная версия для hover эффектов */
+  --primary-blue-light: #60a5fa; /* Более светлая версия */
+}
+
+/* Классы для фона с primary-blue */
+.bg-primary-blue {
+  background-color: var(--primary-blue);
+}
+
+.bg-primary-blue-dark {
+  background-color: var(--primary-blue-dark);
+}
+
+.bg-primary-blue-light {
+  background-color: var(--primary-blue-light);
+}
+
+/* Классы для текста с primary-blue */
+.text-primary-blue {
+  color: var(--primary-blue);
+}
+
+.text-primary-blue-dark {
+  color: var(--primary-blue-dark);
+}
+
+.text-primary-blue-light {
+  color: var(--primary-blue-light);
+}
+
+/* Классы для кнопок с primary-blue */
+.btn-primary-blue {
+  background-color: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: white;
+}
+
+.btn-primary-blue:hover {
+  background-color: var(--primary-blue-dark);
+  border-color: var(--primary-blue-dark);
+}
+
+/* Классы для границ с primary-blue */
+.border-primary-blue {
+  border-color: var(--primary-blue) !important;
+}
+
+/* Классы для отступов с primary-blue */
+.shadow-primary-blue {
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+}
+
+/* Пример использования в качестве акцентного цвета */
+.accent-primary-blue::before {
+  background-color: var(--primary-blue);
+  content: '';
+  display: block;
+  height: 3px;
+  width: 100%;
+}

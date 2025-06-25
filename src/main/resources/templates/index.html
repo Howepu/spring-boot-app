@@ -2,17 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Главная страница</title>
+    <title>AI-Insight Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/custom.css}">
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="jumbotron">
-            <h1 class="display-4">Демонстрационное Spring Boot приложение</h1>
+    <div class="container mt-5 bg-dark text-white p-4 rounded">
+        <div class="jumbotron text-center">
+            <h1 class="display-4">AI-Insight Dashboard</h1>
             <p class="lead">Простой пример использования Spring Boot, Thymeleaf и Lombok.</p>
             <hr class="my-4">
             <p>Используйте ссылки ниже для навигации по приложению.</p>
-            <a class="btn btn-primary btn-lg" th:href="@{/users}" role="button">Список пользователей</a>
+            <a class="btn btn-primary-blue btn-lg" th:href="@{/users}" role="button">Список пользователей</a>
         </div>
     </div>
 </body>

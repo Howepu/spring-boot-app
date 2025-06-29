@@ -1,5 +1,7 @@
 package com.example.springbootapp.controller;
 
+import com.example.springbootapp.service.InsightService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,20 +10,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Контроллер для обработки запросов к ИИ API для получения аналитических данных по заданной теме
+ * Делегирует обработку запросов соответствующему сервису
  */
 @RestController
 @RequestMapping("/api/insights")
 public class InsightController {
 
+    private final InsightService insightService;
+    
+    /**
+     * Конструктор с автоматическим внедрением зависимостей
+     * 
+     * @param insightService сервис для работы с ИИ API
+     */
+    @Autowired
+    public InsightController(InsightService insightService) {
+        this.insightService = insightService;
+    }
+
     /**
      * Обрабатывает POST-запрос для получения аналитических данных по указанной теме
+     * Проверяет входные данные и делегирует обработку сервису InsightService
      * 
      * @param requestBody тело запроса, содержащее поле topic с темой для анализа
      * @return ResponseEntity с JSON, содержащим обзор, ключевые понятия и связанные ссылки
@@ -36,8 +50,8 @@ public class InsightController {
             
             String topic = requestBody.get("topic");
             
-            // Вызов внешнего ИИ API (заглушка)
-            Map<String, Object> aiResponse = callExternalAiApi(topic);
+            // Вызов сервиса для получения данных от ИИ API
+            Map<String, Object> aiResponse = insightService.getInsightsForTopic(topic);
             
             return ResponseEntity.ok(aiResponse);
             
@@ -45,47 +59,6 @@ public class InsightController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("Произошла ошибка при обработке запроса: " + e.getMessage()));
         }
-    }
-    
-    /**
-     * Заглушка для вызова внешнего ИИ API
-     * 
-     * @param topic тема для анализа
-     * @return карта с результатами анализа
-     */
-    private Map<String, Object> callExternalAiApi(String topic) {
-        // Здесь должен быть реальный вызов ИИ API
-        // Пока просто возвращаем заглушку с данными
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        // Добавляем обзор
-        response.put("overview", "Это общий обзор темы '" + topic + "', сгенерированный заглушкой ИИ API. " +
-                "В реальной реализации здесь будет содержательный текст, полученный от ИИ.");
-        
-        // Добавляем ключевые понятия
-        List<String> keyConcepts = new ArrayList<>();
-        keyConcepts.add("Ключевое понятие 1 для темы " + topic);
-        keyConcepts.add("Ключевое понятие 2 для темы " + topic);
-        keyConcepts.add("Ключевое понятие 3 для темы " + topic);
-        response.put("keyConcepts", keyConcepts);
-        
-        // Добавляем связанные ссылки
-        List<Map<String, String>> relatedLinks = new ArrayList<>();
-        
-        Map<String, String> link1 = new HashMap<>();
-        link1.put("title", "Первая связанная ссылка для " + topic);
-        link1.put("url", "https://example.com/resource1");
-        relatedLinks.add(link1);
-        
-        Map<String, String> link2 = new HashMap<>();
-        link2.put("title", "Вторая связанная ссылка для " + topic);
-        link2.put("url", "https://example.com/resource2");
-        relatedLinks.add(link2);
-        
-        response.put("relatedLinks", relatedLinks);
-        
-        return response;
     }
     
     /**

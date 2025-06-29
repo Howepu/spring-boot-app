@@ -70,15 +70,38 @@
     <!-- Root element for React app -->
     <div id="root"></div>
     
-    <!-- React Components -->
-    <script type="text/babel" src="/js/components/HomePage.js"></script>
-    <script type="text/babel" src="/js/components/App.js"></script>
-    <script type="text/babel" src="/js/components/Header.js"></script>
-    <script type="text/babel" src="/js/components/UserList.js"></script>
-    <script type="text/babel" src="/js/components/UserForm.js"></script>
-    <script type="text/babel" src="/js/components/UserView.js"></script>
+    <!-- Компоненты React -->
+    <script type="text/babel" src="/js/components/InsightForm.js"></script>
     
-    <!-- Main React entry point -->
-    <script type="text/babel" src="/js/main.js"></script>
+    <!-- Корневой компонент приложения -->
+    <script type="text/babel">
+        // Основной компонент приложения
+        function App() {
+          return (
+            <div className="container mx-auto px-4 py-8">
+              <header className="mb-8 text-center">
+                <h1 className="text-3xl font-bold text-primary">AI-Insight Dashboard</h1>
+                <p className="text-gray-600 mt-2">Получите глубокий анализ любой темы с помощью AI</p>
+              </header>
+              
+              <main>
+                <InsightForm />
+              </main>
+              
+              <footer className="mt-12 text-center text-sm text-gray-500">
+                <p> 2025 AI-Insight Dashboard. </p>
+              </footer>
+            </div>
+          );
+        }
+
+        // Рендерим приложение в корневой элемент
+        ReactDOM.render(
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>,
+          document.getElementById('root')
+        );
+    </script>
 </body>
 </html>

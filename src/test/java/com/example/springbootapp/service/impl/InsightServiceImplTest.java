@@ -1,16 +1,23 @@
 package com.example.springbootapp.service.impl;
 
-import com.example.springbootapp.service.InsightService;
+import com.example.springbootapp.model.NeuralApiResponse;
+import com.example.springbootapp.service.NeuralApiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -18,6 +25,10 @@ import static org.mockito.Mockito.*;
  */
 public class InsightServiceImplTest {
 
+    // Mock для NeuralApiService
+    @Mock
+    private NeuralApiService neuralApiService;
+    
     // Используем Spy для частичного мокирования реального сервиса
     @Spy
     private InsightServiceImpl insightService;
@@ -26,6 +37,36 @@ public class InsightServiceImplTest {
     public void setup() {
         // Инициализация моков
         MockitoAnnotations.openMocks(this);
+        
+        // Создаем экземпляр сервиса с mock-зависимостью
+        insightService = new InsightServiceImpl(neuralApiService);
+        
+        // Настраиваем поведение mock-объекта NeuralApiService
+        NeuralApiResponse mockResponse = new NeuralApiResponse();
+        mockResponse.setModel("test-model");
+        mockResponse.setResponse("Тестовый ответ для темы");
+        mockResponse.setDone(true);
+        
+        when(neuralApiService.requestInsightsFromApi(anyString()))
+            .thenReturn(Mono.just(mockResponse));
+            
+        Map<String, Object> mockFormattedResponse = new HashMap<>();
+        mockFormattedResponse.put("overview", "Обзор темы: тестовая тема");
+        
+        List<String> concepts = new ArrayList<>();
+        concepts.add("Ключевое понятие 1 для темы тестовая тема");
+        concepts.add("Ключевое понятие 2 для темы тестовая тема");
+        mockFormattedResponse.put("keyConcepts", concepts);
+        
+        List<Map<String, String>> links = new ArrayList<>();
+        Map<String, String> link = new HashMap<>();
+        link.put("title", "Тестовая ссылка");
+        link.put("url", "https://example.com/test");
+        links.add(link);
+        mockFormattedResponse.put("relatedLinks", links);
+        
+        when(neuralApiService.convertResponseToInsightFormat(any(NeuralApiResponse.class)))
+            .thenReturn(mockFormattedResponse);
     }
 
     /**
@@ -70,24 +111,16 @@ public class InsightServiceImplTest {
     
     /**
      * Тест на проверку обработки пустой темы
-     * Создаем класс-обертку для тестирования исключения при пустой теме
      */
     @Test
     public void testGetInsightsForTopic_EmptyTopic() {
-        // Создаем модифицированный сервис для тестирования ошибки с пустой темой
-        InsightService testService = new InsightServiceImpl() {
-            @Override
-            public Map<String, Object> getInsightsForTopic(String topic) {
-                if (topic == null || topic.isEmpty()) {
-                    throw new IllegalArgumentException("Тема не может быть пустой");
-                }
-                return super.getInsightsForTopic(topic);
-            }
-        };
-        
+        // Настраиваем поведение mock-объекта для пустой темы
+        when(neuralApiService.requestInsightsFromApi(""))
+            .thenThrow(new IllegalArgumentException("Тема не может быть пустой"));
+            
         // Проверяем что исключение выбрасывается
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            testService.getInsightsForTopic("");
+            insightService.getInsightsForTopic("");
         });
         
         assertEquals("Тема не может быть пустой", exception.getMessage());
@@ -98,23 +131,17 @@ public class InsightServiceImplTest {
      */
     @Test
     public void testGetInsightsForTopic_ApiTimeout() {
-        // Создаем модифицированный сервис для тестирования таймаута API
-        InsightService testService = new InsightServiceImpl() {
-            @Override
-            public Map<String, Object> getInsightsForTopic(String topic) {
-                if ("таймаут-тема".equals(topic)) {
-                    throw new RuntimeException("API timeout");
-                }
-                return super.getInsightsForTopic(topic);
-            }
-        };
+        // Настраиваем поведение mock-объекта для темы, вызывающей таймаут
+        when(neuralApiService.requestInsightsFromApi("таймаут-тема"))
+            .thenReturn(Mono.error(new RuntimeException("API timeout")));
+            
+        // Проверяем что исключение корректно обрабатывается
+        Map<String, Object> result = insightService.getInsightsForTopic("таймаут-тема");
         
-        // Проверяем что исключение выбрасывается
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            testService.getInsightsForTopic("таймаут-тема");
-        });
-        
-        assertEquals("API timeout", exception.getMessage());
+        // Проверяем что результат содержит информацию об ошибке
+        assertTrue((Boolean)result.get("error"), "Результат должен содержать флаг ошибки");
+        assertTrue(((String)result.get("message")).contains("API timeout"), 
+                "Сообщение об ошибке должно содержать причину");
     }
     
     /**

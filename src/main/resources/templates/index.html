@@ -1,107 +1,244 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI-Insight Dashboard</title>
     
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- React CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Custom Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1a56db',
-                        secondary: '#7e3af2',
-                    }
-                }
-            }
+    <style>
+        .insight-card {
+            transition: transform 0.2s;
         }
-    </script>
-    
-    <!-- Custom CSS -->
-    <script>
-        tailwind.config = {
-            ...tailwind.config,
-            plugins: [
-                function({ addComponents }) {
-                    addComponents({
-                        '.btn-primary': {
-                            'padding-left': '1rem',
-                            'padding-right': '1rem',
-                            'padding-top': '0.5rem',
-                            'padding-bottom': '0.5rem',
-                            'background-color': '#1a56db',
-                            'color': 'white',
-                            'border-radius': '0.25rem',
-                            '&:hover': {
-                                'background-color': '#1d4ed8'
-                            },
-                            'transition-duration': '200ms'
-                        },
-                        '.btn-secondary': {
-                            'padding-left': '1rem',
-                            'padding-right': '1rem',
-                            'padding-top': '0.5rem',
-                            'padding-bottom': '0.5rem',
-                            'background-color': '#e5e7eb',
-                            'color': '#1f2937',
-                            'border-radius': '0.25rem',
-                            '&:hover': {
-                                'background-color': '#d1d5db'
-                            },
-                            'transition-duration': '200ms'
-                        }
-                    })
-                }
-            ]
+        
+        .insight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-    </script>
+        
+        .loading-spinner {
+            display: none;
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <!-- Root element for React app -->
-    <div id="root"></div>
-    
-    <!-- Компоненты React -->
-    <script type="text/babel" src="/js/components/InsightForm.js"></script>
-    
-    <!-- Корневой компонент приложения -->
-    <script type="text/babel">
-        // Основной компонент приложения
-        function App() {
-          return (
-            <div className="container mx-auto px-4 py-8">
-              <header className="mb-8 text-center">
-                <h1 className="text-3xl font-bold text-primary">AI-Insight Dashboard</h1>
-                <p className="text-gray-600 mt-2">Получите глубокий анализ любой темы с помощью AI</p>
-              </header>
-              
-              <main>
-                <InsightForm />
-              </main>
-              
-              <footer className="mt-12 text-center text-sm text-gray-500">
-                <p> 2025 AI-Insight Dashboard. </p>
-              </footer>
+<body class="bg-light">
+    <div class="container py-5">
+        <header class="text-center mb-5">
+            <h1 class="display-4">AI-Insight Dashboard</h1>
+            <p class="lead text-muted">Получите аналитические данные по любой интересующей вас теме</p>
+        </header>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Форма запроса -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="card-title h4 mb-3">Введите тему для анализа</h2>
+                        <div class="input-group mb-3">
+                            <input type="text" id="topicInput" class="form-control form-control-lg" 
+                                   placeholder="Например: Spring Boot, Machine Learning, Quantum Computing...">
+                            <button class="btn btn-primary" type="button" id="requestBtn">Получить анализ</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Индикатор загрузки -->
+                <div class="text-center my-4">
+                    <div class="spinner-border loading-spinner" id="loadingSpinner" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+                
+                <!-- Результат анализа -->
+                <div id="resultContainer" style="display: none;">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h4 mb-4">Обзор</h2>
+                            <p id="overviewContent" class="lead"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 shadow-sm insight-card">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">Ключевые понятия</h3>
+                                    <ul id="keyConceptsList" class="list-group list-group-flush"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 shadow-sm insight-card">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">Интересные факты</h3>
+                                    <ul id="factsList" class="list-group list-group-flush"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm mb-4 insight-card">
+                        <div class="card-body p-4">
+                            <h3 class="h5 mb-3">Практические применения</h3>
+                            <p id="applicationsContent"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm insight-card">
+                        <div class="card-header">
+                            <h3 class="h5 mb-0">Связанные ссылки</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul id="relatedLinksList" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Сообщение об ошибке -->
+                <div id="errorContainer" class="alert alert-danger" style="display: none;"></div>
             </div>
-          );
-        }
-
-        // Рендерим приложение в корневой элемент
-        ReactDOM.render(
-          <React.StrictMode>
-            <App />
-          </React.StrictMode>,
-          document.getElementById('root')
-        );
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-white border-top">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2025 AI-Insight Dashboard</span>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Скрипт для работы с API -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const topicInput = document.getElementById('topicInput');
+            const requestBtn = document.getElementById('requestBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultContainer = document.getElementById('resultContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            
+            // Обработчик клика на кнопку запроса
+            requestBtn.addEventListener('click', async function() {
+                const topic = topicInput.value.trim();
+                
+                if (!topic) {
+                    showError('Пожалуйста, введите тему для анализа');
+                    return;
+                }
+                
+                // Показываем индикатор загрузки
+                loadingSpinner.style.display = 'inline-block';
+                resultContainer.style.display = 'none';
+                errorContainer.style.display = 'none';
+                
+                try {
+                    // Отправляем запрос к API
+                    const response = await fetch('/api/insights', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ topic })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        showError(data.message || 'Произошла ошибка при получении данных');
+                    } else {
+                        displayResults(data);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError('Ошибка при обращении к серверу: ' + error.message);
+                } finally {
+                    // Скрываем индикатор загрузки
+                    loadingSpinner.style.display = 'none';
+                }
+            });
+            
+            function displayResults(data) {
+                // Заполняем обзор
+                document.getElementById('overviewContent').textContent = data.overview || 'Нет данных';
+                
+                // Заполняем ключевые понятия
+                const keyConceptsList = document.getElementById('keyConceptsList');
+                keyConceptsList.innerHTML = '';
+                
+                if (data.keyConcepts && data.keyConcepts.length > 0) {
+                    data.keyConcepts.forEach(concept => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = concept;
+                        keyConceptsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = 'Нет данных';
+                    keyConceptsList.appendChild(li);
+                }
+                
+                // Заполняем факты
+                const factsList = document.getElementById('factsList');
+                factsList.innerHTML = '';
+                
+                if (data.facts && data.facts.length > 0) {
+                    data.facts.forEach(fact => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = fact;
+                        factsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = 'Нет данных';
+                    factsList.appendChild(li);
+                }
+                
+                // Заполняем применения
+                document.getElementById('applicationsContent').textContent = data.applications || 'Нет данных';
+                
+                // Заполняем связанные ссылки
+                const relatedLinksList = document.getElementById('relatedLinksList');
+                relatedLinksList.innerHTML = '';
+                
+                if (data.relatedLinks && data.relatedLinks.length > 0) {
+                    data.relatedLinks.forEach(link => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        const a = document.createElement('a');
+                        a.href = link.url;
+                        a.textContent = link.title;
+                        a.target = '_blank';
+                        li.appendChild(a);
+                        relatedLinksList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = 'Нет связанных ссылок';
+                    relatedLinksList.appendChild(li);
+                }
+                
+                // Показываем контейнер с результатами
+                resultContainer.style.display = 'block';
+            }
+            
+            function showError(message) {
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+                resultContainer.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>

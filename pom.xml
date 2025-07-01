@@ -53,6 +53,18 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- WebFlux для асинхронных HTTP запросов -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<!-- Reactor для реактивного программирования -->
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

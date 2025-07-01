@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "ollama.api.url",
+      "type": "java.lang.String",
+      "description": "URL для API Ollama, используемый для запросов к нейросети."
+    },
+    {
+      "name": "ollama.model",
+      "type": "java.lang.String",
+      "description": "Название модели Ollama, используемое для генерации ответов."
+    }
+  ]
+}

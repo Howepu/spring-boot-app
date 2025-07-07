@@ -1,0 +1,30 @@
+# Тестовая конфигурация для Spring Boot
+spring:
+  application:
+    name: spring-boot-app-test
+  web:
+    resources:
+      static-locations:
+        - classpath:/public/
+        - classpath:/static/
+      cache:
+        period: 0
+
+# Настройки сервера для тестов
+server:
+  port: 0 # Случайный порт для тестов
+
+# Настройки логирования
+logging:
+  level:
+    root: ERROR
+    com:
+      example:
+        springbootapp: DEBUG
+    org:
+      springframework: WARN
+
+# Настройки Ollama API для тестов
+ollama:
+  apiUrl: http://localhost:11434
+  model: deepseek-r1:14b

@@ -1,0 +1,29 @@
+# Базовые настройки приложения
+spring:
+  application:
+    name: spring-boot-app
+  web:
+    resources:
+      static-locations:
+        - classpath:/public/
+        - classpath:/static/
+      cache:
+        period: 0
+
+# Настройки сервера
+server:
+  port: 8080
+
+# Настройки логирования
+logging:
+  level:
+    root: INFO
+    com:
+      example:
+        springbootapp: DEBUG
+
+# Настройки Ollama API
+ollama:
+  api:
+    url: http://localhost:11434
+  model: deepseek-r1:14b

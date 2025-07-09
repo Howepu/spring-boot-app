@@ -3,6 +3,7 @@ package com.example.springbootapp.service.impl;
 import com.example.springbootapp.model.NeuralApiResponse;
 import com.example.springbootapp.service.InsightService;
 import com.example.springbootapp.service.NeuralApiService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -29,11 +30,13 @@ public class InsightServiceImpl implements InsightService {
 
     /**
      * Получает аналитические данные по указанной теме через API нейросети Ollama
+     * Результаты кэшируются по ключу темы для предотвращения повторных вызовов API
      * 
      * @param topic тема для анализа
      * @return карта, содержащая обзор, ключевые понятия и связанные ссылки
      */
     @Override
+    @Cacheable(value = "insightsCache", key = "#topic")
     public Map<String, Object> getInsightsForTopic(String topic) {
         try {
             // Вызываем Ollama API и блокируем поток до получения ответа

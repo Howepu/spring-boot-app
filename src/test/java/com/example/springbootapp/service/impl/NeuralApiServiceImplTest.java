@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
  */
 public class NeuralApiServiceImplTest {
 
-    @Mock
+    // Вместо мокирования OllamaConfig создаем реальный объект
     private OllamaConfig ollamaConfig;
 
     private NeuralApiServiceImpl neuralApiService;
@@ -48,11 +48,12 @@ public class NeuralApiServiceImplTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
         
-        // Настраиваем Mock OllamaConfig
-        when(ollamaConfig.getApiUrl()).thenReturn("http://localhost:11434");
-        when(ollamaConfig.getModel()).thenReturn("llama2");
+        // Создаем реальный объект OllamaConfig вместо мока
+        ollamaConfig = new OllamaConfig();
+        ollamaConfig.setApiUrl("http://localhost:11434");
+        ollamaConfig.setModel("llama2");
         
-        // Создаем сервис с мок-конфигурацией
+        // Создаем сервис с реальной конфигурацией
         neuralApiService = new NeuralApiServiceImpl(ollamaConfig);
     }
 
@@ -172,12 +173,12 @@ public class NeuralApiServiceImplTest {
      */
     @Test
     public void testNullConfigValues() {
-        // Подготавливаем конфигурацию с null значениями
-        when(ollamaConfig.getApiUrl()).thenReturn(null);
-        when(ollamaConfig.getModel()).thenReturn(null);
+        // Создаем новый объект конфигурации с null значениями
+        OllamaConfig nullConfig = new OllamaConfig();
+        // Не устанавливаем значения - они будут null по умолчанию
         
         // Создаем новый экземпляр сервиса с такой конфигурацией
-        NeuralApiServiceImpl serviceWithNullConfig = new NeuralApiServiceImpl(ollamaConfig);
+        NeuralApiServiceImpl serviceWithNullConfig = new NeuralApiServiceImpl(nullConfig);
         
         // Проверяем, что сервис был создан и не выбросил исключение
         assertNotNull(serviceWithNullConfig);

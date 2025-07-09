@@ -26,4 +26,4 @@ logging:
 ollama:
   api:
     url: http://localhost:11434
-  model: deepseek-r1:14b
+  model: llama2

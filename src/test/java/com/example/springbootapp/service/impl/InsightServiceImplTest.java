@@ -28,19 +28,15 @@ public class InsightServiceImplTest {
     @Mock
     private NeuralApiService neuralApiService;
     
-    // Убираем аннотацию @Spy и просто объявляем переменную
     private InsightServiceImpl insightService;
 
     @BeforeEach
     public void setup() {
-        // Инициализация моков
+        // Инициализация моков с использованием MockitoAnnotations
         MockitoAnnotations.openMocks(this);
         
-        // Создаем экземпляр сервиса с mock-зависимостью
+        // Создаем обычный экземпляр сервиса с mock-зависимостью, без использования spy
         insightService = new InsightServiceImpl(neuralApiService);
-        
-        // Если нужно использовать spy, создаем его явно
-        insightService = spy(insightService);
         
         // Настраиваем поведение mock-объекта NeuralApiService для обычных запросов
         NeuralApiResponse mockResponse = new NeuralApiResponse();
@@ -143,18 +139,23 @@ public class InsightServiceImplTest {
      */
     @Test
     public void testGetInsightsForTopic_ApiTimeout() {
-        // Создаем мок ошибочного ответа
-        Map<String, Object> errorMap = new HashMap<>();
-        errorMap.put("error", true);
-        errorMap.put("message", "Ошибка при обработке запроса к нейросети: API timeout");
+        // Создаем мок ответа с ошибкой
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("error", true);
+        errorResponse.put("message", "Ошибка при обработке запроса к нейросети: API timeout");
+        
+        // Настраиваем мок NeuralApiResponse с ошибкой
+        NeuralApiResponse errorApiResponse = new NeuralApiResponse();
+        errorApiResponse.setError("API timeout");
         
         // Настраиваем поведение mock-объекта для темы, вызывающей таймаут
-        when(neuralApiService.requestInsightsFromApi("таймаут-тема"))
-            .thenReturn(Mono.error(new RuntimeException("API timeout")));
+        when(neuralApiService.requestInsightsFromApi(eq("таймаут-тема")))
+            .thenReturn(Mono.just(errorApiResponse));
         
-        // Доработаем обработчик ошибок в тесте
-        doReturn(errorMap).when(insightService).getInsightsForTopic("таймаут-тема");
-            
+        // Настраиваем поведение convertResponseToInsightFormat для ответа с ошибкой
+        when(neuralApiService.convertResponseToInsightFormat(any(NeuralApiResponse.class)))
+            .thenReturn(errorResponse);
+        
         // Вызываем метод для получения результата
         Map<String, Object> result = insightService.getInsightsForTopic("таймаут-тема");
         
@@ -162,6 +163,8 @@ public class InsightServiceImplTest {
         assertNotNull(result, "Результат не должен быть null");
         assertTrue(result.containsKey("error"), "Результат должен содержать поле error");
         assertEquals(true, result.get("error"), "Поле error должно быть true");
+        assertTrue(result.containsKey("message"), "Результат должен содержать поле message");
+        assertTrue(result.get("message").toString().contains("API timeout"), "Сообщение об ошибке должно содержать текст о таймауте");
         assertTrue(result.containsKey("message"), "Результат должен содержать поле message");
         assertTrue(((String) result.get("message")).contains("API timeout"), 
                 "Сообщение об ошибке должно содержать причину");
@@ -176,9 +179,12 @@ public class InsightServiceImplTest {
         String testTopic = "метод-тема";
         
         // Вызываем метод, который тестируем
-        insightService.getInsightsForTopic(testTopic);
+        Map<String, Object> result = insightService.getInsightsForTopic(testTopic);
         
-        // Проверяем, что метод был вызван с правильными параметрами
-        verify(insightService, times(1)).getInsightsForTopic(eq(testTopic));
+        // Проверяем вызов нейросети через мок NeuralApiService
+        verify(neuralApiService, times(1)).requestInsightsFromApi(eq(testTopic));
+        
+        // Проверяем наличие результата
+        assertNotNull(result, "Результат не должен быть null");
     }
 }

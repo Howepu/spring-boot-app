@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: changes/01-create-schema.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/02-create-users-tables.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/03-mark-existing-migrations.sql
+      relativeToChangelogFile: true

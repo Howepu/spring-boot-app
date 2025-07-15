@@ -5,22 +5,73 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
- * Репозиторий для работы с пользователями
+ * In-memory реализация репозитория для работы с пользователями
  */
 @Repository
 public class UserRepository {
-    
-    private final List<User> users = new ArrayList<>();
+    private final Map<Long, User> users = new ConcurrentHashMap<>();
+    private final AtomicLong idCounter = new AtomicLong(1);
     
     /**
-     * Находит всех пользователей
-     * @return список пользователей
+     * Находит пользователя по имени (логину)
+     * @param username имя пользователя
+     * @return объект Optional с пользователем
      */
-    public List<User> findAll() {
-        return new ArrayList<>(users);
+    public Optional<User> findByUsername(String username) {
+        return users.values().stream()
+                .filter(user -> username.equals(user.getUsername()))
+                .findFirst();
+    }
+    
+    /**
+     * Проверяет, существует ли пользователь с таким именем
+     * @param username имя пользователя
+     * @return true если пользователь существует, иначе false
+     */
+    public boolean existsByUsername(String username) {
+        return users.values().stream()
+                .anyMatch(user -> username.equals(user.getUsername()));
+    }
+    
+    /**
+     * Находит пользователя по email
+     * @param email электронная почта пользователя
+     * @return объект Optional с пользователем
+     */
+    public Optional<User> findByEmail(String email) {
+        return users.values().stream()
+                .filter(user -> email.equals(user.getEmail()))
+                .findFirst();
+    }
+    
+    /**
+     * Проверяет, существует ли пользователь с таким email
+     * @param email электронная почта пользователя
+     * @return true если пользователь существует, иначе false
+     */
+    public boolean existsByEmail(String email) {
+        return users.values().stream()
+                .anyMatch(user -> email.equals(user.getEmail()));
+    }
+    
+    /**
+     * Сохраняет пользователя
+     * @param user объект пользователя
+     * @return сохраненный пользователь с присвоенным ID
+     */
+    public User save(User user) {
+        if (user.getId() == null) {
+            user.setId(idCounter.getAndIncrement());
+        }
+        users.put(user.getId(), user);
+        return user;
     }
     
     /**
@@ -29,48 +80,15 @@ public class UserRepository {
      * @return объект Optional с пользователем
      */
     public Optional<User> findById(Long id) {
-        return users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst();
+        return Optional.ofNullable(users.get(id));
     }
     
     /**
-     * Находит пользователя по имени (логину)
-     * @param username имя пользователя
-     * @return объект Optional с пользователем
+     * Получает всех пользователей
+     * @return список пользователей
      */
-    public Optional<User> findByUsername(String username) {
-        return users.stream()
-                .filter(user -> user.getUsername().equals(username))
-                .findFirst();
-    }
-    
-    /**
-     * Проверяет, существует ли пользователь с таким именем
-     * @param username имя пользователя
-     * @return true, если пользователь существует
-     */
-    public boolean existsByUsername(String username) {
-        return users.stream()
-                .anyMatch(user -> user.getUsername().equals(username));
-    }
-    
-    /**
-     * Сохраняет пользователя
-     * @param user объект пользователя
-     * @return сохраненный пользователь
-     */
-    public User save(User user) {
-        // Если пользователь новый - добавляем его, иначе обновляем существующего
-        if (user.getId() == null) {
-            user.setId((long) (users.size() + 1));
-            users.add(user);
-        } else {
-            // Удаляем старую версию пользователя и добавляем обновленную
-            users.removeIf(existingUser -> existingUser.getId().equals(user.getId()));
-            users.add(user);
-        }
-        return user;
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
     }
     
     /**
@@ -78,6 +96,6 @@ public class UserRepository {
      * @param id идентификатор пользователя
      */
     public void deleteById(Long id) {
-        users.removeIf(user -> user.getId().equals(id));
+        users.remove(id);
     }
 }

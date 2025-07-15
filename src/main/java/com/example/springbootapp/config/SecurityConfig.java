@@ -40,14 +40,22 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
                     // Публичные ресурсы
-                    .requestMatchers("/css/**", "/js/**", "/", "/login", "/error").permitAll()
+                    .requestMatchers("/css/**", "/js/**", "/error", "/login", "/register").permitAll()
                     // API для аналитических данных требует авторизации
                     .requestMatchers("/api/insights/**").authenticated()
                     // Все остальные запросы требуют аутентификации
                     .anyRequest().authenticated()
             )
             .httpBasic(Customizer.withDefaults()) // Включаем HTTP Basic Auth
-            .formLogin(Customizer.withDefaults()); // Включаем форму логина по умолчанию
+            .formLogin(formLogin -> formLogin
+                .loginPage("/login")
+                .defaultSuccessUrl("/insights", true) // Перенаправление на страницу генерации после входа
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+            );
         
         return http.build();
     }

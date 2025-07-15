@@ -3,6 +3,7 @@ package com.example.springbootapp.service.impl;
 import com.example.springbootapp.config.OllamaConfig;
 import com.example.springbootapp.model.NeuralApiResponse;
 import com.example.springbootapp.service.NeuralApiService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
@@ -101,9 +102,32 @@ public class NeuralApiServiceImpl implements NeuralApiService {
 
         // Обработка ответа от нейросети
         String content = response.getResponse();
+        System.out.println("Преобразование ответа нейросети: " + (content != null ? 
+            (content.length() > 100 ? content.substring(0, 100) + "..." : content) : "null"));
         
         // Парсим ответ и получаем структурированные данные
         Map<String, Object> parsedData = parseNeuralResponse(content);
+        
+        if (parsedData.isEmpty() && content != null && !content.isEmpty()) {
+            // Если не удалось распарсить JSON, пытаемся извлечь его из текста
+            try {
+                String jsonStr = extractJsonFromResponse(content);
+                if (jsonStr != null) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    parsedData = mapper.readValue(jsonStr, new TypeReference<Map<String, Object>>() {});
+                    System.out.println("Успешно извлечен и распарсен JSON из ответа");
+                }
+            } catch (Exception e) {
+                System.err.println("Ошибка при извлечении JSON из ответа: " + e.getMessage());
+                // Если не удалось распарсить JSON, используем весь ответ как overview
+                parsedData.put("overview", content);
+            }
+        }
+        
+        // Если после всех попыток данные всё равно пустые, создаем базовую структуру
+        if (parsedData.isEmpty() && content != null) {
+            parsedData.put("overview", content);
+        }
         
         // Копируем данные в результирующую структуру
         result.putAll(parsedData);
@@ -150,28 +174,46 @@ public class NeuralApiServiceImpl implements NeuralApiService {
     }
 
     /**
-     * Извлекает JSON из ответа нейросети
-     *
-     * @param content ответ нейросети
-     * @return найденный JSON или null
+     * Извлекает JSON из текстового ответа нейросети
+     * Учитывает различные форматы ответа, включая вложенный JSON в текст
+     * 
+     * @param response текстовый ответ от нейросети
+     * @return извлеченный JSON в виде строки или null, если не найден
      */
-    private String extractJsonFromResponse(String content) {
-        if (content == null || content.isEmpty()) {
+    private String extractJsonFromResponse(String response) {
+        if (response == null || response.isEmpty()) {
             return null;
         }
-        
-        // Ищем JSON между маркерами ```json и ```
-        int jsonStart = content.indexOf("{\n");
-        if (jsonStart == -1) {
-            jsonStart = content.indexOf("{");
+
+        // Пытаемся найти JSON в обратных кавычках (как в markdown)
+        Pattern jsonPattern = Pattern.compile("```(?:json)?([\\s\\S]*?)```");
+        Matcher jsonMatcher = jsonPattern.matcher(response);
+
+        if (jsonMatcher.find()) {
+            String jsonContent = jsonMatcher.group(1).trim();
+            if (jsonContent.startsWith("{") && jsonContent.endsWith("}")) {
+                System.out.println("Извлечен JSON из markdown блока кода");
+                return jsonContent;
+            }
         }
-        
-        int jsonEnd = content.lastIndexOf("}");
-        
-        if (jsonStart != -1 && jsonEnd != -1 && jsonStart < jsonEnd) {
-            return content.substring(jsonStart, jsonEnd + 1);
+
+        // Если JSON не найден в markdown блоке, ищем JSON между фигурными скобками
+        Pattern bracesPattern = Pattern.compile("\\{[\\s\\S]*?\\}");
+        Matcher bracesMatcher = bracesPattern.matcher(response);
+
+        if (bracesMatcher.find()) {
+            String jsonCandidate = bracesMatcher.group(0);
+            try {
+                // Проверяем, является ли найденная строка валидным JSON
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.readTree(jsonCandidate);
+                System.out.println("Извлечен JSON между фигурными скобками");
+                return jsonCandidate;
+            } catch (Exception e) {
+                System.out.println("Найденная строка не является валидным JSON: " + e.getMessage());
+            }
         }
-        
+
         return null;
     }
 

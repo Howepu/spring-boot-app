@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генерация инсайтов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .navbar {
+            background-color: #4a6fdc;
+        }
+        .navbar-brand {
+            font-weight: 700;
+        }
+        .content-container {
+            padding-top: 30px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #4a6fdc;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px;
+        }
+        .btn-primary {
+            background-color: #4a6fdc;
+            border-color: #4a6fdc;
+        }
+        .btn-primary:hover {
+            background-color: #3a5fc9;
+            border-color: #3a5fc9;
+        }
+        .insight-result {
+            border-left: 4px solid #4a6fdc;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        /* Новые стили для улучшенного отображения инсайтов */
+        .insight-container {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .insight-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .insight-title {
+            font-size: 1.6rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .insight-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .insight-date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        .insight-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #4a6fdc;
+        }
+        .insight-section-title {
+            color: #4a6fdc;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .insight-content {
+            padding-left: 10px;
+        }
+        .insight-content p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .insight-list {
+            list-style-type: none;
+            padding-left: 5px;
+        }
+        .insight-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+        .insight-list li:before {
+            content: "•";
+            color: #4a6fdc;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .fact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .fact-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .fact-icon {
+            color: #4a6fdc;
+            font-size: 1.2rem;
+        }
+        .link-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .link-card {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        .link-card:hover {
+            background-color: #dee2e6;
+            color: #212529;
+        }
+        .insight-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .raw-data {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Генератор инсайтов</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/insights">Генерация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/history">История</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <span class="navbar-text me-3" th:if="${#authentication != null && #authentication.principal != 'anonymousUser'}" 
+                          th:text="${'Привет, ' + #authentication.principal.username}">
+                        Привет, пользователь
+                    </span>
+                    <form class="d-flex" th:action="@{/logout}" method="post">
+                        <button class="btn btn-sm btn-outline-light" type="submit">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основное содержимое -->
+    <div class="container content-container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">Генерация инсайтов</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="insightForm">
+                            <div class="mb-3">
+                                <label for="topic" class="form-label">Введите тему для анализа</label>
+                                <input type="text" class="form-control" id="topic" name="topic" 
+                                       placeholder="Например: Влияние искусственного интеллекта на образование" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="length" class="form-label">Выберите глубину анализа</label>
+                                <select class="form-select" id="length" name="length">
+                                    <option value="short">Краткий (1-2 абзаца)</option>
+                                    <option value="medium" selected>Средний (3-5 абзацев)</option>
+                                    <option value="long">Подробный (более 5 абзацев)</option>
+                                </select>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Сгенерировать инсайт</button>
+                            </div>
+                        </form>
+
+                        <!-- Индикатор загрузки -->
+                        <div class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                            <div class="mt-3">Генерация инсайтов...</div>
+                        </div>
+                        
+                        <!-- Результат генерации -->
+                        <div id="result" class="mt-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('insightForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const topic = document.getElementById('topic').value.trim();
+            const length = document.getElementById('length').value;
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.querySelector('.loading');
+            
+            if (!topic) {
+                alert('Пожалуйста, введите тему для анализа');
+                return;
+            }
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            
+            fetch('/api/insights/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    topic: topic,
+                    parameters: {
+                        length: length
+                    }
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                displayInsights(data, topic);
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                resultDiv.innerHTML = `<div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Произошла ошибка: ${error.message}
+                </div>`;
+            });
+        });
+
+        function displayInsights(data, topic) {
+            const resultDiv = document.getElementById('result');
+            
+            if (data.error) {
+                resultDiv.innerHTML = `<div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${data.message || 'Произошла ошибка при генерации инсайтов.'}
+                </div>`;
+                return;
+            }
+            
+            // Создаем красивый контейнер для инсайтов
+            const insightContainer = document.createElement('div');
+            insightContainer.className = 'insight-container';
+            
+            // Формируем заголовок с метаданными
+            const header = document.createElement('div');
+            header.className = 'insight-header mb-4';
+            
+            const title = document.createElement('div');
+            title.className = 'insight-title';
+            title.innerHTML = `<i class="bi bi-lightbulb-fill text-warning me-2"></i>Инсайты по теме "${topic}"`;
+            
+            const meta = document.createElement('div');
+            meta.className = 'insight-meta';
+            
+            const date = document.createElement('div');
+            date.className = 'insight-date';
+            date.innerHTML = `<i class="bi bi-calendar3 me-1"></i>${new Date().toLocaleString('ru-RU')}`;
+            
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary';
+            badge.innerHTML = `<i class="bi bi-cpu me-1"></i>${data.model || 'AI'}`;
+            
+            meta.appendChild(date);
+            meta.appendChild(badge);
+            
+            header.appendChild(title);
+            header.appendChild(meta);
+            insightContainer.appendChild(header);
+            
+            // Отображаем все секции инсайтов
+            try {
+                // Отображаем обзор
+                if (data.overview) {
+                    appendSection(insightContainer, 'Обзор', data.overview, 'bi-info-circle-fill');
+                }
+                
+                // Отображаем ключевые концепции
+                if (data.keyConcepts) {
+                    appendSection(insightContainer, 'Ключевые концепции', data.keyConcepts, 'bi-key-fill');
+                }
+                
+                // Отображаем факты
+                if (data.facts) {
+                    appendFactsSection(insightContainer, 'Факты', data.facts, 'bi-journal-check');
+                }
+                
+                // Отображаем применения
+                if (data.applications) {
+                    appendSection(insightContainer, 'Практические применения', data.applications, 'bi-tools');
+                }
+                
+                // Отображаем связанные ссылки, если есть
+                if (data.relatedLinks && data.relatedLinks.length > 0) {
+                    appendLinksSection(insightContainer, 'Связанные ресурсы', data.relatedLinks, 'bi-link');
+                }
+                
+                // Добавляем кнопки для сохранения и экспорта
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'insight-actions';
+                
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'btn btn-outline-primary me-2';
+                saveBtn.innerHTML = '<i class="bi bi-save me-1"></i>Сохранить';
+                saveBtn.addEventListener('click', () => { alert('Функция сохранения будет добавлена в будущих версиях'); });
+                
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'btn btn-outline-success';
+                shareBtn.innerHTML = '<i class="bi bi-share me-1"></i>Поделиться';
+                shareBtn.addEventListener('click', () => { alert('Функция экспорта будет добавлена в будущих версиях'); });
+                
+                actionsDiv.appendChild(saveBtn);
+                actionsDiv.appendChild(shareBtn);
+                insightContainer.appendChild(actionsDiv);
+                
+            } catch (e) {
+                // В случае ошибки при парсинге JSON, показываем сырые данные
+                console.error('Ошибка при парсинге данных инсайта:', e);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-warning';
+                errorDiv.innerHTML = `
+                    <h5><i class="bi bi-exclamation-circle-fill me-2"></i>Ошибка форматирования данных</h5>
+                    <p>Инсайт был получен, но возникла проблема с форматированием. Вот сырые данные:</p>
+                    <div class="raw-data">${JSON.stringify(data, null, 2)}</div>
+                `;
+                insightContainer.appendChild(errorDiv);
+            }
+            
+            resultDiv.appendChild(insightContainer);
+        }
+        
+        // Функция для добавления секции с текстовым содержимым
+        function appendSection(container, title, content, iconClass) {
+            const section = document.createElement('div');
+            section.className = 'insight-section';
+            
+            const sectionTitle = document.createElement('div');
+            sectionTitle.className = 'insight-section-title';
+            sectionTitle.innerHTML = `<i class="bi ${iconClass} me-2"></i>${title}`;
+            
+            const sectionContent = document.createElement('div');
+            sectionContent.className = 'insight-content';
+            
+            // Проверяем, является ли контент массивом
+            if (Array.isArray(content)) {
+                const list = document.createElement('ul');
+                list.className = 'insight-list';
+                
+                content.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = item;
+                    list.appendChild(listItem);
+                });
+                
+                sectionContent.appendChild(list);
+            } else {
+                // Преобразуем текстовое содержимое в абзацы
+                const paragraphs = content.split('\n\n');
+                paragraphs.forEach(paragraph => {
+                    if (paragraph.trim()) {
+                        const p = document.createElement('p');
+                        p.textContent = paragraph.trim();
+                        sectionContent.appendChild(p);
+                    }
+                });
+            }
+            
+            section.appendChild(sectionTitle);
+            section.appendChild(sectionContent);
+            container.appendChild(section);
+        }
+        
+        // Функция для отображения фактов в виде карточек
+        function appendFactsSection(container, title, facts, iconClass) {
+            const section = document.createElement('div');
+            section.className = 'insight-section';
+            
+            const sectionTitle = document.createElement('div');
+            sectionTitle.className = 'insight-section-title';
+            sectionTitle.innerHTML = `<i class="bi ${iconClass} me-2"></i>${title}`;
+            
+            const factCards = document.createElement('div');
+            factCards.className = 'fact-cards';
+            
+            // Если факты в виде массива
+            if (Array.isArray(facts)) {
+                facts.forEach(fact => {
+                    const factCard = document.createElement('div');
+                    factCard.className = 'fact-card';
+                    
+                    const factIcon = document.createElement('div');
+                    factIcon.className = 'fact-icon';
+                    factIcon.innerHTML = '<i class="bi bi-check-circle"></i>';
+                    
+                    const factText = document.createElement('div');
+                    factText.className = 'fact-text';
+                    factText.textContent = fact;
+                    
+                    factCard.appendChild(factIcon);
+                    factCard.appendChild(factText);
+                    factCards.appendChild(factCard);
+                });
+            } else if (typeof facts === 'string') {
+                // Если факты в виде строки, разбиваем по строкам
+                const factsList = facts.split('\n').filter(line => line.trim());
+                factsList.forEach(fact => {
+                    const factCard = document.createElement('div');
+                    factCard.className = 'fact-card';
+                    
+                    const factIcon = document.createElement('div');
+                    factIcon.className = 'fact-icon';
+                    factIcon.innerHTML = '<i class="bi bi-check-circle"></i>';
+                    
+                    const factText = document.createElement('div');
+                    factText.className = 'fact-text';
+                    factText.textContent = fact.trim();
+                    
+                    factCard.appendChild(factIcon);
+                    factCard.appendChild(factText);
+                    factCards.appendChild(factCard);
+                });
+            }
+            
+            section.appendChild(sectionTitle);
+            section.appendChild(factCards);
+            container.appendChild(section);
+        }
+        
+        // Функция для отображения связанных ссылок
+        function appendLinksSection(container, title, links, iconClass) {
+            const section = document.createElement('div');
+            section.className = 'insight-section';
+            
+            const sectionTitle = document.createElement('div');
+            sectionTitle.className = 'insight-section-title';
+            sectionTitle.innerHTML = `<i class="bi ${iconClass} me-2"></i>${title}`;
+            
+            const linkCards = document.createElement('div');
+            linkCards.className = 'link-cards';
+            
+            links.forEach(link => {
+                const linkCard = document.createElement('a');
+                linkCard.className = 'link-card';
+                linkCard.href = link.url;
+                linkCard.target = '_blank';
+                linkCard.rel = 'noopener noreferrer';
+                linkCard.innerHTML = `<i class="bi bi-box-arrow-up-right me-1"></i>${link.title}`;
+                linkCards.appendChild(linkCard);
+            });
+            
+            section.appendChild(sectionTitle);
+            section.appendChild(linkCards);
+            container.appendChild(section);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: spring-boot-app-postgres
+    environment:
+      POSTGRES_DB: spring-boot-app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - spring-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  liquibase:
+    image: liquibase/liquibase:4.23
+    container_name: spring-boot-app-liquibase
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src/main/resources/db/changelog:/liquibase/changelog
+      - ./src/main/resources/db/changelog/liquibase.properties:/liquibase/liquibase.properties
+    environment:
+      INSTALL_MYSQL: "true"
+      INSTALL_POSTGRES: "true"
+    command: >
+      --defaults-file=/liquibase/liquibase.properties
+      --log-level=INFO
+      update
+    networks:
+      - spring-network
+
+networks:
+  spring-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

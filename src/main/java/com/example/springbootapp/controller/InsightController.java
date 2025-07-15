@@ -62,6 +62,40 @@ public class InsightController {
     }
     
     /**
+     * Обрабатывает POST-запрос для генерации инсайтов по указанной теме с дополнительными параметрами
+     * Поддерживает структуру запроса, отправляемую с клиентской стороны
+     * 
+     * @param requestBody тело запроса, содержащее тему и параметры генерации
+     * @return ResponseEntity с JSON, содержащим результат генерации
+     */
+    @PostMapping("/generate")
+    public ResponseEntity<Map<String, Object>> generateInsights(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // Проверка наличия обязательного поля
+            if (!requestBody.containsKey("topic") || requestBody.get("topic") == null) {
+                return ResponseEntity.badRequest().body(createErrorResponse("Не указана тема для анализа"));
+            }
+            
+            String topic = requestBody.get("topic").toString();
+            
+            // Извлечение параметров, если есть (не используются в текущей реализации, но могут быть добавлены)
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parameters = requestBody.containsKey("parameters") ? 
+                                           (Map<String, Object>) requestBody.get("parameters") : 
+                                           new HashMap<>();
+            
+            // Вызов сервиса для получения данных от ИИ API
+            Map<String, Object> aiResponse = insightService.getInsightsForTopic(topic);
+            
+            return ResponseEntity.ok(aiResponse);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Произошла ошибка при обработке запроса: " + e.getMessage()));
+        }
+    }
+    
+    /**
      * Создает стандартную структуру ответа с ошибкой
      * 
      * @param errorMessage сообщение об ошибке

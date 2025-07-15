@@ -5,13 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Модель роли пользователя для системы безопасности
+ * Класс для ролей пользователей (in-memory версия)
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Role {
     private Long id;
+    
     private String name;
     
     public Role(String name) {

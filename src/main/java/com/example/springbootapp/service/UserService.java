@@ -45,7 +45,8 @@ public class UserService implements UserDetailsService {
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin")); // В реальной системе нужен более сложный пароль
             admin.setEmail("admin@example.com");
-            admin.initCreatedAtIfNull();
+            admin.setFirstName("Администратор");
+            admin.setLastName("Системы");
             
             Set<Role> roles = new HashSet<>();
             roles.add(roleService.createRoleIfNotExists("ADMIN"));
@@ -61,7 +62,8 @@ public class UserService implements UserDetailsService {
             user.setUsername("user");
             user.setPassword(passwordEncoder.encode("user"));
             user.setEmail("user@example.com");
-            user.initCreatedAtIfNull();
+            user.setFirstName("Тестовый");
+            user.setLastName("Пользователь");
             
             Set<Role> roles = new HashSet<>();
             roles.add(roleService.createRoleIfNotExists("USER"));
@@ -116,23 +118,19 @@ public class UserService implements UserDetailsService {
      * @throws IllegalArgumentException если пользователь с таким именем или email уже существует
      */
     public User createUser(User user) {
-        // Проверяем, что пользователь с таким именем или email не существует
+        // Проверяем уникальность имени пользователя
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new IllegalArgumentException("Пользователь с именем " + user.getUsername() + " уже существует");
+            throw new IllegalArgumentException("Имя пользователя " + user.getUsername() + " уже занято");
         }
         
+        // Проверяем уникальность email
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Пользователь с email " + user.getEmail() + " уже существует");
+            throw new IllegalArgumentException("Email " + user.getEmail() + " уже занят");
         }
         
         // Шифруем пароль перед сохранением
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        
-        // Устанавливаем дату создания
-        if (user.getCreatedAt() == null) {
-            user.setCreatedAt(LocalDateTime.now());
-        }
-        
+                
         // Если роли не указаны, добавляем роль USER по умолчанию
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             Set<Role> roles = new HashSet<>();

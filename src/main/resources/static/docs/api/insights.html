@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights API - Spring Boot Ollama Integration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/doc-styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковая навигация -->
+            <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>Документация API</span>
+                    </h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../index.html">
+                                Вернуться на главную
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#overview">
+                                Обзор Insights API
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#get-insight">
+                                GET /api/insights/{id}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#create-insight">
+                                POST /api/insights
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#get-insights">
+                                GET /api/insights
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#analyze-text">
+                                POST /api/insights/analyze
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1>Insights API</h1>
+                </div>
+
+                <section id="overview">
+                    <h2>Обзор Insights API</h2>
+                    <p>
+                        Insights API предоставляет доступ к функциональности анализа данных с помощью нейросети Ollama.
+                        API позволяет создавать запросы на анализ, получать результаты анализа и управлять существующими инсайтами.
+                    </p>
+                    <p>
+                        Базовый URL для API: <code>/api/insights</code>
+                    </p>
+                </section>
+
+                <section id="get-insight" class="mt-5">
+                    <div class="method-block">
+                        <h3>
+                            <span class="http-method get">GET</span>
+                            /api/insights/{id}
+                        </h3>
+                        <p>Получение инсайта по идентификатору.</p>
+
+                        <h4>Параметры пути</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Обязательный</th>
+                                    <th>Описание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>id</td>
+                                    <td>Long</td>
+                                    <td>Да</td>
+                                    <td>Идентификатор инсайта</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Ответ</h4>
+                        <p>В случае успеха возвращается объект InsightDTO:</p>
+                        <pre><code>{
+    "id": 1,
+    "query": "Анализ продаж за июнь 2025",
+    "result": "Продажи выросли на 15% по сравнению с предыдущим месяцем. Основной рост пришелся на категорию 'Электроника'.",
+    "createdAt": "2025-07-15T10:30:00",
+    "status": "COMPLETED"
+}</code></pre>
+
+                        <h4>Коды ответа</h4>
+                        <ul>
+                            <li><strong>200 OK</strong> - Инсайт успешно получен</li>
+                            <li><strong>404 Not Found</strong> - Инсайт с указанным ID не найден</li>
+                            <li><strong>500 Internal Server Error</strong> - Ошибка сервера</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="create-insight" class="mt-5">
+                    <div class="method-block">
+                        <h3>
+                            <span class="http-method post">POST</span>
+                            /api/insights
+                        </h3>
+                        <p>Создание нового запроса на аналитический инсайт.</p>
+
+                        <h4>Тело запроса</h4>
+                        <pre><code>{
+    "query": "Анализ продаж за июнь 2025"
+}</code></pre>
+
+                        <h4>Ответ</h4>
+                        <p>В случае успеха возвращается созданный объект InsightDTO с идентификатором:</p>
+                        <pre><code>{
+    "id": 1,
+    "query": "Анализ продаж за июнь 2025",
+    "status": "PROCESSING"
+}</code></pre>
+
+                        <h4>Коды ответа</h4>
+                        <ul>
+                            <li><strong>201 Created</strong> - Запрос на инсайт успешно создан</li>
+                            <li><strong>400 Bad Request</strong> - Некорректные входные данные</li>
+                            <li><strong>500 Internal Server Error</strong> - Ошибка сервера</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="get-insights" class="mt-5">
+                    <div class="method-block">
+                        <h3>
+                            <span class="http-method get">GET</span>
+                            /api/insights
+                        </h3>
+                        <p>Получение списка всех инсайтов с поддержкой пагинации.</p>
+
+                        <h4>Параметры запроса</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Параметр</th>
+                                    <th>Тип</th>
+                                    <th>Обязательный</th>
+                                    <th>Описание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>page</td>
+                                    <td>Integer</td>
+                                    <td>Нет</td>
+                                    <td>Номер страницы (по умолчанию 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>size</td>
+                                    <td>Integer</td>
+                                    <td>Нет</td>
+                                    <td>Размер страницы (по умолчанию 20)</td>
+                                </tr>
+                                <tr>
+                                    <td>sort</td>
+                                    <td>String</td>
+                                    <td>Нет</td>
+                                    <td>Поле для сортировки (по умолчанию createdAt,desc)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4>Ответ</h4>
+                        <p>В случае успеха возвращается страница с объектами InsightDTO:</p>
+                        <pre><code>{
+    "content": [
+        {
+            "id": 1,
+            "query": "Анализ продаж за июнь 2025",
+            "result": "Продажи выросли на 15% по сравнению с предыдущим месяцем. Основной рост пришелся на категорию 'Электроника'.",
+            "createdAt": "2025-07-15T10:30:00",
+            "status": "COMPLETED"
+        },
+        {
+            "id": 2,
+            "query": "Прогноз продаж на следующий квартал",
+            "result": null,
+            "createdAt": "2025-07-17T09:15:00",
+            "status": "PROCESSING"
+        }
+    ],
+    "pageable": {
+        "sort": {
+            "sorted": true,
+            "unsorted": false,
+            "empty": false
+        },
+        "offset": 0,
+        "pageSize": 20,
+        "pageNumber": 0,
+        "paged": true,
+        "unpaged": false
+    },
+    "totalPages": 1,
+    "totalElements": 2,
+    "last": true,
+    "size": 20,
+    "number": 0,
+    "sort": {
+        "sorted": true,
+        "unsorted": false,
+        "empty": false
+    },
+    "numberOfElements": 2,
+    "first": true,
+    "empty": false
+}</code></pre>
+
+                        <h4>Коды ответа</h4>
+                        <ul>
+                            <li><strong>200 OK</strong> - Список инсайтов успешно получен</li>
+                            <li><strong>500 Internal Server Error</strong> - Ошибка сервера</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="analyze-text" class="mt-5">
+                    <div class="method-block">
+                        <h3>
+                            <span class="http-method post">POST</span>
+                            /api/insights/analyze
+                        </h3>
+                        <p>Прямой запрос на анализ текста с синхронным ожиданием результата.</p>
+
+                        <h4>Тело запроса</h4>
+                        <pre><code>{
+    "text": "Текст для анализа нейросетью",
+    "options": {
+        "maxTokens": 500,
+        "temperature": 0.7
+    }
+}</code></pre>
+
+                        <h4>Ответ</h4>
+                        <p>В случае успеха возвращается результат анализа:</p>
+                        <pre><code>{
+    "result": "Результат анализа, полученный от нейросети Ollama",
+    "metadata": {
+        "processTime": 3.2,
+        "tokenCount": 425,
+        "model": "llama2:latest"
+    }
+}</code></pre>
+
+                        <h4>Коды ответа</h4>
+                        <ul>
+                            <li><strong>200 OK</strong> - Анализ успешно выполнен</li>
+                            <li><strong>400 Bad Request</strong> - Некорректные входные данные</li>
+                            <li><strong>500 Internal Server Error</strong> - Ошибка сервера при обработке запроса или ошибка взаимодействия с Ollama API</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="mt-5">
+                    <h2>Модели данных</h2>
+                    <h4>InsightDTO</h4>
+                    <table class="parameter-table">
+                        <thead>
+                            <tr>
+                                <th>Поле</th>
+                                <th>Тип</th>
+                                <th>Описание</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>id</td>
+                                <td>Long</td>
+                                <td>Уникальный идентификатор инсайта</td>
+                            </tr>
+                            <tr>
+                                <td>query</td>
+                                <td>String</td>
+                                <td>Запрос для анализа</td>
+                            </tr>
+                            <tr>
+                                <td>result</td>
+                                <td>String</td>
+                                <td>Результат анализа (может быть null для незавершенных запросов)</td>
+                            </tr>
+                            <tr>
+                                <td>createdAt</td>
+                                <td>LocalDateTime</td>
+                                <td>Время создания запроса</td>
+                            </tr>
+                            <tr>
+                                <td>status</td>
+                                <td>Enum</td>
+                                <td>Статус запроса (PENDING, PROCESSING, COMPLETED, FAILED)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <footer class="mt-5 pt-3 border-top">
+                    <p class="text-muted">&copy; 2025 Spring Boot Ollama Integration</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/docs.js"></script>
+</body>
+</html>

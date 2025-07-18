@@ -41,6 +41,8 @@ public class SecurityConfig {
                 authorizeRequests
                     // Публичные ресурсы
                     .requestMatchers("/css/**", "/js/**", "/error", "/login", "/register").permitAll()
+                    // Разрешаем доступ к эндпоинтам Actuator health и prometheus без аутентификации
+                    .requestMatchers("/actuator/health/**", "/actuator/prometheus/**").permitAll()
                     // API для аналитических данных требует авторизации
                     .requestMatchers("/api/insights/**").authenticated()
                     // Все остальные запросы требуют аутентификации

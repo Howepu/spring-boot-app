@@ -3,6 +3,7 @@ package com.example.springbootapp.service.impl;
 import com.example.springbootapp.config.OllamaConfig;
 import com.example.springbootapp.model.NeuralApiResponse;
 import com.example.springbootapp.service.NeuralApiService;
+import io.micrometer.core.annotation.Timed;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +56,7 @@ public class NeuralApiServiceImpl implements NeuralApiService {
     }
 
     @Override
+    @Timed(value = "ollama.api.request", description = "Время выполнения запросов к Ollama API")
     public Mono<NeuralApiResponse> requestInsightsFromApi(String topic) {
         String model = ollamaConfig.getModel();
         if (model == null || model.isEmpty()) {

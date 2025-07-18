@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документация API - Spring Boot Ollama Integration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/doc-styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковая навигация -->
+            <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>Содержание</span>
+                    </h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#overview">
+                                Обзор проекта
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="setup-guide.html">
+                                Установка и запуск
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="architecture.html">
+                                Архитектура
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#api-docs">
+                                Документация API
+                            </a>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link ms-3" href="api/insights.html">
+                                        Insights API
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#configuration">
+                                Конфигурация
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#monitoring">
+                                Мониторинг
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1>Spring Boot Ollama Integration</h1>
+                </div>
+
+                <section id="overview">
+                    <h2>Обзор проекта</h2>
+                    <p>
+                        Проект представляет собой Spring Boot приложение, которое интегрируется с локально запущенным 
+                        Ollama API для получения аналитических данных на основе нейросети.
+                    </p>
+                    <h3>Ключевые компоненты</h3>
+                    <ul>
+                        <li>Конфигурация Ollama API через @ConfigurationProperties с параметрами:
+                            <ul>
+                                <li>ollama.api.url=http://localhost:11434</li>
+                                <li>ollama.model=llama2</li>
+                            </ul>
+                        </li>
+                        <li>Веб-интерфейс на Bootstrap</li>
+                        <li>REST API с контроллером InsightController</li>
+                        <li>Сервисы:
+                            <ul>
+                                <li>InsightService - бизнес-логика</li>
+                                <li>NeuralApiService - интеграция с Ollama API</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+
+                <section id="installation" class="mt-5">
+                    <h2>Установка и запуск</h2>
+                    <h3>Требования</h3>
+                    <ul>
+                        <li>Java 17+</li>
+                        <li>PostgreSQL</li>
+                        <li>Ollama API запущен локально</li>
+                    </ul>
+                    
+                    <h3>Запуск</h3>
+                    <pre><code>./mvnw spring-boot:run</code></pre>
+                </section>
+
+                <section id="api-docs" class="mt-5">
+                    <h2>Документация API</h2>
+                    <p>Приложение предоставляет REST API для взаимодействия с нейросетью Ollama.</p>
+                    <p>Подробная документация по каждому методу API доступна в соответствующих разделах:</p>
+                    <ul>
+                        <li><a href="api/insights.html">Insights API</a> - методы для получения аналитических данных</li>
+                    </ul>
+                </section>
+
+                <section id="configuration" class="mt-5">
+                    <h2>Конфигурация</h2>
+                    <p>Основная конфигурация приложения находится в файле <code>application.yml</code>:</p>
+                    <pre><code># Настройки Ollama API
+ollama:
+  api:
+    url: http://localhost:11434
+  model: llama2:latest</code></pre>
+                </section>
+
+                <section id="monitoring" class="mt-5">
+                    <h2>Мониторинг</h2>
+                    <p>
+                        Приложение интегрировано с Prometheus для сбора метрик. 
+                        Метрики доступны по адресу <code>/actuator/prometheus</code>.
+                    </p>
+                    <p>
+                        Также доступны другие Actuator endpoints для мониторинга состояния приложения по адресу
+                        <code>/actuator</code>:
+                    </p>
+                    <ul>
+                        <li>/actuator/health - информация о состоянии приложения</li>
+                        <li>/actuator/prometheus - метрики для Prometheus</li>
+                    </ul>
+                </section>
+
+                <footer class="mt-5 pt-3 border-top">
+                    <p class="text-muted">&copy; 2025 Spring Boot Ollama Integration</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/docs.js"></script>
+</body>
+</html>

@@ -47,11 +47,22 @@ public class WebAuthController {
             model.addAttribute("errorMessage", "Пользователь с таким именем уже существует");
             return "register";
         }
-
-        // Сохраняем нового пользователя
-        userService.createUser(user);
         
-        // Перенаправляем на страницу входа с сообщением об успешной регистрации
-        return "redirect:/login?registered";
+        // Проверяем, что email не занят
+        if (userService.getUserByEmail(user.getEmail()).isPresent()) {
+            model.addAttribute("errorMessage", "Email " + user.getEmail() + " уже используется");
+            return "register";
+        }
+
+        try {
+            // Сохраняем нового пользователя
+            userService.createUser(user);
+            // Перенаправляем на страницу входа с сообщением об успешной регистрации
+            return "redirect:/login?registered";
+        } catch (IllegalArgumentException e) {
+            // Дополнительная обработка других возможных ошибок валидации
+            model.addAttribute("errorMessage", e.getMessage());
+            return "register";
+        }
     }
 }

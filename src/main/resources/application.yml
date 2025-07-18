@@ -47,3 +47,35 @@ ollama:
   api:
     url: http://localhost:11434
   model: llama2:latest
+
+# Настройки SpringDoc для документации API
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  api-docs:
+    path: /v3/api-docs
+  packages-to-scan: com.example.springbootapp.controller
+  pathsToMatch: /**
+
+# Настройки Actuator для мониторинга
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true

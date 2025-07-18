@@ -1,49 +1,48 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: spring-boot-app-postgres
-    environment:
-      POSTGRES_DB: spring-boot-app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: spring-boot-app-prometheus
     ports:
-      - "5433:5432"
+      - "9090:9090"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
     restart: unless-stopped
     networks:
       - spring-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  liquibase:
-    image: liquibase/liquibase:4.23
-    container_name: spring-boot-app-liquibase
-    depends_on:
-      postgres:
-        condition: service_healthy
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: spring-boot-app-grafana
+    ports:
+      - "3000:3000"
     volumes:
-      - ./src/main/resources/db/changelog:/liquibase/changelog
-      - ./src/main/resources/db/changelog/liquibase.properties:/liquibase/liquibase.properties
+      - grafana-data:/var/lib/grafana
     environment:
-      INSTALL_MYSQL: "true"
-      INSTALL_POSTGRES: "true"
-    command: >
-      --defaults-file=/liquibase/liquibase.properties
-      --log-level=INFO
-      update
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
     networks:
       - spring-network
+    depends_on:
+      - prometheus
 
 networks:
   spring-network:
     driver: bridge
 
 volumes:
-  postgres-data:
+  prometheus-data:
+    driver: local
+  grafana-data:
     driver: local

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектура - Spring Boot Ollama Integration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/doc-styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковая навигация -->
+            <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>Архитектура</span>
+                    </h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">
+                                Вернуться на главную
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#overview">
+                                Общая архитектура
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#components">
+                                Компоненты системы
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#api-integration">
+                                Интеграция с Ollama API
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#data-model">
+                                Модель данных
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#security">
+                                Безопасность
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1>Архитектура приложения</h1>
+                </div>
+
+                <section id="overview">
+                    <h2>Общая архитектура</h2>
+                    <p>
+                        Spring Boot Ollama Integration построен на основе классической многослойной архитектуры Spring Boot 
+                        с дополнительными компонентами для интеграции с Ollama API.
+                    </p>
+                    <h3>Основные слои приложения:</h3>
+                    <ol>
+                        <li><strong>Представление (Presentation Layer)</strong> - REST API контроллеры и веб-интерфейс на Bootstrap</li>
+                        <li><strong>Бизнес-логика (Service Layer)</strong> - сервисы для обработки запросов и управления данными</li>
+                        <li><strong>Доступ к данным (Data Access Layer)</strong> - репозитории для работы с БД</li>
+                        <li><strong>Интеграция (Integration Layer)</strong> - клиент для Ollama API</li>
+                    </ol>
+                    <div class="text-center my-4">
+                        <div class="bg-light p-3 rounded">
+                            <pre>
+┌───────────────────────────────────────────────────┐
+│                 Presentation Layer                 │
+│                                                   │
+│ ┌─────────────────┐         ┌─────────────────┐   │
+│ │    REST API     │         │   Web UI        │   │
+│ │  Controllers    │         │   (Bootstrap)   │   │
+│ └────────┬────────┘         └────────┬────────┘   │
+└──────────┼─────────────────────────────────────┼──┘
+           │                                     │
+┌──────────┼─────────────────────────────────────┼──┐
+│          ▼                                     ▼  │
+│                 Service Layer                     │
+│                                                   │
+│ ┌─────────────────┐         ┌─────────────────┐   │
+│ │  InsightService │         │ NeuralApiService│   │
+│ └────────┬────────┘         └────────┬────────┘   │
+└──────────┼─────────────────────────────────────┼──┘
+           │                                     │
+┌──────────┼─────────────────────────────────────┼──┐
+│          ▼                                     │  │
+│               Data Access Layer                │  │
+│                                                │  │
+│ ┌─────────────────┐                            │  │
+│ │  Repositories   │                            │  │
+│ └────────┬────────┘                            │  │
+└──────────┼────────────────────────────────┼────┘  │
+           │                                │       │
+┌──────────┼────────────────────────────────┼───────┤
+│          ▼                                ▼       │
+│         ┌─────────────────┐     ┌──────────────┐  │
+│         │  PostgreSQL DB  │     │  Ollama API  │  │
+│         └─────────────────┘     └──────────────┘  │
+│                                                   │
+└───────────────────────────────────────────────────┘</pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="components" class="mt-5">
+                    <h2>Компоненты системы</h2>
+                    
+                    <h3>1. Контроллеры</h3>
+                    <ul>
+                        <li><strong>InsightController</strong> - обрабатывает HTTP-запросы для управления инсайтами</li>
+                        <li><strong>WebViewController</strong> - контроллер для веб-интерфейса</li>
+                    </ul>
+                    
+                    <h3>2. Сервисы</h3>
+                    <ul>
+                        <li>
+                            <strong>InsightService</strong> - бизнес-логика для работы с инсайтами
+                            <ul>
+                                <li>Создание новых инсайтов</li>
+                                <li>Получение результатов анализа</li>
+                                <li>Управление статусами запросов</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>NeuralApiService</strong> - интеграция с Ollama API
+                            <ul>
+                                <li>Отправка запросов в Ollama API</li>
+                                <li>Обработка ответов от нейросети</li>
+                                <li>Управление параметрами запросов</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                    <h3>3. Репозитории</h3>
+                    <ul>
+                        <li><strong>InsightRepository</strong> - доступ к данным инсайтов в БД</li>
+                        <li><strong>UserRepository</strong> - доступ к данным пользователей</li>
+                    </ul>
+                    
+                    <h3>4. Конфигурации</h3>
+                    <ul>
+                        <li><strong>OllamaApiConfig</strong> - настройки подключения к Ollama API</li>
+                        <li><strong>SecurityConfig</strong> - настройки безопасности приложения</li>
+                        <li><strong>WebConfig</strong> - настройки веб-слоя</li>
+                        <li><strong>MetricsConfig</strong> - настройки сбора метрик для мониторинга</li>
+                    </ul>
+                </section>
+
+                <section id="api-integration" class="mt-5">
+                    <h2>Интеграция с Ollama API</h2>
+                    <p>
+                        Интеграция с Ollama API осуществляется через WebClient из Spring WebFlux, 
+                        который обеспечивает реактивное взаимодействие с API.
+                    </p>
+                    <h3>Основные параметры интеграции:</h3>
+                    <ul>
+                        <li><code>ollama.api.url</code> - базовый URL API (по умолчанию http://localhost:11434)</li>
+                        <li><code>ollama.model</code> - используемая модель (по умолчанию llama2:latest)</li>
+                    </ul>
+                    <h3>Пример запроса к Ollama API:</h3>
+                    <pre><code>{
+    "model": "llama2:latest",
+    "prompt": "Анализ продаж за июнь 2025",
+    "stream": false,
+    "options": {
+        "temperature": 0.7,
+        "num_predict": 500
+    }
+}</code></pre>
+
+                    <h3>Обработка результатов:</h3>
+                    <p>
+                        Результат анализа, полученный от Ollama API, сохраняется в базе данных и 
+                        связывается с соответствующим запросом инсайта.
+                    </p>
+                </section>
+
+                <section id="data-model" class="mt-5">
+                    <h2>Модель данных</h2>
+                    <h3>Основные сущности:</h3>
+                    
+                    <h4>1. Insight</h4>
+                    <p>Сущность для хранения запросов и результатов анализа:</p>
+                    <pre><code>@Entity
+@Table(name = "insights")
+public class Insight {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String query;
+    
+    @Column(columnDefinition = "TEXT")
+    private String result;
+    
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Enumerated(EnumType.STRING)
+    private InsightStatus status;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+}</code></pre>
+                    
+                    <h4>2. User</h4>
+                    <p>Сущность для хранения данных пользователей:</p>
+                    <pre><code>@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false, unique = true)
+    private String username;
+    
+    @Column(nullable = false)
+    private String password;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles = new HashSet<>();
+}</code></pre>
+                    
+                    <h3>Статусы запросов инсайтов:</h3>
+                    <pre><code>public enum InsightStatus {
+    PENDING,    // Ожидает обработки
+    PROCESSING, // В процессе анализа
+    COMPLETED,  // Анализ завершен успешно
+    FAILED      // Ошибка при анализе
+}</code></pre>
+                </section>
+
+                <section id="security" class="mt-5">
+                    <h2>Безопасность</h2>
+                    <p>
+                        Приложение использует Spring Security для аутентификации и авторизации пользователей.
+                    </p>
+                    
+                    <h3>Основные принципы безопасности:</h3>
+                    <ul>
+                        <li>Аутентификация на основе форм входа</li>
+                        <li>Шифрование паролей с помощью BCrypt</li>
+                        <li>Ролевая модель доступа (ROLE_USER, ROLE_ADMIN)</li>
+                        <li>CSRF защита для веб-форм</li>
+                        <li>Защита от XSS атак</li>
+                    </ul>
+                    
+                    <h3>Настройка безопасности:</h3>
+                    <pre><code>@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/", "/css/**", "/js/**", "/docs/**").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/dashboard")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/")
+                .permitAll()
+            );
+        
+        return http.build();
+    }
+}</code></pre>
+                </section>
+
+                <footer class="mt-5 pt-3 border-top">
+                    <p class="text-muted">&copy; 2025 Spring Boot Ollama Integration</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/docs.js"></script>
+</body>
+</html>

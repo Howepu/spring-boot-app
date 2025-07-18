@@ -112,6 +112,15 @@ public class UserService implements UserDetailsService {
     }
     
     /**
+     * Найти пользователя по email
+     * @param email email пользователя
+     * @return объект Optional с пользователем
+     */
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+    
+    /**
      * Создать нового пользователя
      * @param user объект пользователя
      * @return созданный пользователь

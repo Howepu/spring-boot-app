@@ -11,10 +11,10 @@ spring:
         period: 0
   # Настройки подключения к PostgreSQL
   datasource:
-    url: jdbc:postgresql://localhost:5432/database
+    url: jdbc:postgresql://localhost:5433/spring_db
     driverClassName: org.postgresql.Driver
     username: postgres
-    password: 1356
+    password: postgres
   # Настройки JPA
   jpa:
     open-in-view: false

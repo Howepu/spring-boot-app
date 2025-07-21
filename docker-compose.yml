@@ -1,7 +1,39 @@
 version: '3.8'
 
 services:
-      
+
+  db:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: spring_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - spring-network
+
+  liquibase-migrations:
+    container_name: migrations
+    image: liquibase/liquibase:4.29
+    depends_on:
+      - db
+    command:
+      - --searchPath=/changesets
+      - --changelog-file=db.changelog-master.xml
+      - --driver=org.postgresql.Driver
+      - --url=jdbc:postgresql://postgres:5432/spring_db
+      - --username=postgres
+      - --password=postgres
+      - update
+    volumes:
+      - ./src/main/resources/db/changelog:/changesets
+    networks:
+      - spring-network
+
   prometheus:
     image: prom/prometheus:v2.45.0
     container_name: spring-boot-app-prometheus
@@ -24,7 +56,7 @@ services:
     image: grafana/grafana:10.0.0
     container_name: spring-boot-app-grafana
     ports:
-      - "3000:3000"
+      - "3030:3000"
     volumes:
       - grafana-data:/var/lib/grafana
     environment:
@@ -45,4 +77,6 @@ volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  db_data:
     driver: local
